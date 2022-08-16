@@ -13,6 +13,7 @@ global {
 	int scavenger_count <- 10;
 	int resource_count <- 5;
 	float resource_multiply_chance <- 0.05;
+	int id_provider <- 0;
 
 	init {
 		create scavenger number: scavenger_count;
@@ -41,6 +42,16 @@ global {
 			invalid_resources <+ potential_target;
 		}
 
+	}
+
+	//	Stop condition
+	reflex stop_on_resource_depletion when: length(resource) = 0 {
+		do pause;
+	}
+
+	int get_id {
+		id_provider <- id_provider + 1;
+		return id_provider;
 	}
 
 }

@@ -24,6 +24,18 @@ experiment TCC type: gui {
 			species resource aspect: base;
 		}
 
+		display population_information refresh: every(5 #cycles) {
+			chart "Resource availability" type: series size: {1, 0.5} position: {0, 0} {
+				data "Number of resources" value: length(resource) color: #green;
+			}
+			chart "Collected resource distribution" type: histogram size: {1, 0.5} position: {0, 0.5} {
+				loop unit over: scavenger {
+					data unit.name value: unit.resources_collected color: #black;
+				}
+			}
+
+		}
+
 	}
 
 }

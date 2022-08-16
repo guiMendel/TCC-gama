@@ -6,11 +6,16 @@
 */
 model Scavenger
 
+import "../Global.gaml"
 import "Resource.gaml"
 import "../Grid.gaml"
 species scavenger {
 	rgb color <- #black;
 	grid_cell cell <- one_of(grid_cell);
+	string name <- "Scav. " + string(world.get_id());
+
+	//	Count of collected resources
+	int resources_collected <- 0;
 
 	//	List of actions it can perform each turn
 	list<string> actions <- ["idle", "move"];
@@ -46,10 +51,14 @@ species scavenger {
 
 		//		Detect resource collision
 		list<resource> cell_resources <- (resource inside (cell));
+		if (!empty(cell_resources)) {
+			resources_collected <- resources_collected + length(cell_resources);
 
-		//		Erase any encountered resources
-		ask cell_resources {
-			do die;
+			//		Erase any encountered resources
+			ask cell_resources {
+				do die;
+			}
+
 		}
 
 	}
