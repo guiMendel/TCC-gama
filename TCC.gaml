@@ -6,24 +6,22 @@
 */
 model TCC
 
+import "Global.gaml"
 import "Grid.gaml"
-import "Species/Scavenger.gaml"
-
-global {
-	int scavenger_count <- 10;
-
-	init {
-		create scavenger number: scavenger_count;
-	}
-
-}
-
 experiment TCC type: gui {
-	parameter "Number of scavengers: " var: scavenger_count min: 1 max: 20 category: "Scavangers";
+//	Scavenger params
+	parameter "Number of scavengers: " var: scavenger_count min: 1 max: 20 category: "Scavengers";
+
+	//	Resource params
+	parameter "Number of resources: " var: resource_count min: 1 max: 20 category: "Resources";
+	parameter "New resource chance: " var: resource_multiply_chance min: 0.0 max: 1.0 category: "Resources";
+
+	//	Output
 	output {
 		display main_display {
 			grid grid_cell;
 			species scavenger aspect: base;
+			species resource aspect: base;
 		}
 
 	}

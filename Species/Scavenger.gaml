@@ -6,6 +6,7 @@
 */
 model Scavenger
 
+import "Resource.gaml"
 import "../Grid.gaml"
 species scavenger {
 	rgb color <- #black;
@@ -26,8 +27,6 @@ species scavenger {
 	reflex {
 	//		Get an action
 		string cycle_action <- one_of(actions);
-
-		//	 	Execute it
 		switch cycle_action {
 			match "idle" {
 			}
@@ -44,6 +43,15 @@ species scavenger {
 	action random_move {
 		cell <- one_of(cell.neighbors);
 		location <- cell.location;
+
+		//		Detect resource collision
+		list<resource> cell_resources <- (resource inside (cell));
+
+		//		Erase any encountered resources
+		ask cell_resources {
+			do die;
+		}
+
 	}
 
 }
