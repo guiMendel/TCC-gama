@@ -9,10 +9,11 @@ model Scavenger
 import "../Global.gaml"
 import "Resource.gaml"
 import "../Grid.gaml"
-species scavenger {
+species scavenger skills: [network] {
 	rgb color <- #black;
 	grid_cell cell <- one_of(grid_cell);
 	string name <- "Scav. " + string(world.get_id());
+	string server;
 
 	//	Count of collected resources
 	int resources_collected <- 0;
@@ -22,6 +23,13 @@ species scavenger {
 
 	init {
 		location <- cell.location;
+
+		//		Connect to NN server
+		do connect to: "localhost" protocol: "websocket_client" port: 3001 raw: true;
+		server <- network_server[0];
+
+		//		Provide name
+		do send to: server contents: name;
 	}
 
 	aspect base {
@@ -29,8 +37,12 @@ species scavenger {
 	}
 
 	//	Cycle action
-	reflex {
-	//		Get an action
+	reflex cycle_action {
+	//		Request action
+	//	TODO: use the action returned here instead of "one_of(actions)"
+		write request_action();
+
+		//		Get an action
 		string cycle_action <- one_of(actions);
 		switch cycle_action {
 			match "idle" {
@@ -59,6 +71,23 @@ species scavenger {
 				do die;
 			}
 
+		}
+
+	}
+
+	action request_action {
+		do send to: server contents: "Mim de";
+
+		//		Wait response
+		loop while: !has_more_message() {
+			do fetch_message_from_network;
+		}
+
+		// Get message
+		loop while: has_more_message() {
+			message msg <- fetch_message();
+			write name + " received message " + msg.contents + " from " + msg.sender;
+			return msg.contents;
 		}
 
 	}

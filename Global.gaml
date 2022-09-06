@@ -10,7 +10,7 @@ import "Species/Resource.gaml"
 import "Species/Scavenger.gaml"
 
 global {
-	int scavenger_count <- 10;
+	int scavenger_count <- 1;
 	int resource_count <- 5;
 	float resource_multiply_chance <- 0.05;
 	int id_provider <- 0;
