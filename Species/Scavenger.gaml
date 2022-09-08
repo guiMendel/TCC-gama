@@ -87,6 +87,7 @@ species scavenger skills: [network] {
 		loop while: has_more_message() {
 			message msg <- fetch_message();
 			write name + " received message " + msg.contents + " from " + msg.sender;
+			do send to: msg.sender contents: name;
 			return msg.contents;
 		}
 
