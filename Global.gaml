@@ -6,16 +6,20 @@
 */
 model Global
 
+import "Modules/json.gaml"
 import "Species/Resource.gaml"
 import "Species/Scavenger.gaml"
 
 global {
-	int scavenger_count <- 1;
+	int scavenger_count <- 2;
 	int resource_count <- 5;
 	float resource_multiply_chance <- 0.05;
 	int id_provider <- 0;
+	json json_encoder;
 
 	init {
+		create json;
+		json_encoder <- first(json);
 		create scavenger number: scavenger_count;
 		create resource number: resource_count;
 	}
@@ -52,6 +56,15 @@ global {
 	int get_id {
 		id_provider <- id_provider + 1;
 		return id_provider;
+	}
+
+	string stringify (unknown target) {
+		string result;
+		ask json_encoder {
+			result <- stringify(target);
+		}
+
+		return result;
 	}
 
 }

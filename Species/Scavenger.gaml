@@ -26,10 +26,9 @@ species scavenger skills: [network] {
 
 		//		Connect to NN server
 		do connect to: "localhost" protocol: "websocket_client" port: 3001 raw: true;
-		server <- network_server[0];
 
-		//		Provide name
-		do send to: server contents: name;
+		//		Connect this scavenger and provide it's name
+		do send contents: world.stringify(["id"::name, "connect"::true]);
 	}
 
 	aspect base {
@@ -39,12 +38,15 @@ species scavenger skills: [network] {
 	//	Cycle action
 	reflex cycle_action {
 	//		Request action
-	//	TODO: use the action returned here instead of "one_of(actions)"
-		write request_action();
+		do execute_action(request_action());
+	}
 
-		//		Get an action
-		string cycle_action <- one_of(actions);
-		switch cycle_action {
+	action execute_action (string action_name) {
+		switch action_name {
+			match "random" {
+				do execute_action(one_of(actions));
+			}
+
 			match "idle" {
 			}
 
@@ -76,21 +78,17 @@ species scavenger skills: [network] {
 	}
 
 	action request_action {
-		do send to: server contents: "Mim de";
+		do send contents: world.stringify(["id"::name, "request"::true]);
 
 		//		Wait response
 		loop while: !has_more_message() {
 			do fetch_message_from_network;
 		}
 
-		// Get message
-		loop while: has_more_message() {
-			message msg <- fetch_message();
-			write name + " received message " + msg.contents + " from " + msg.sender;
-			do send to: msg.sender contents: name;
-			return msg.contents;
-		}
-
+		// Get message (there should only be one)
+		message msg <- fetch_message();
+		//		write name + " received message " + msg.contents + " from " + msg.sender;
+		return msg.contents;
 	}
 
 }
