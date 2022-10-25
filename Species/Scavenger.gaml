@@ -78,7 +78,7 @@ species scavenger skills: [network] {
 	}
 
 	action request_action {
-		do send contents: world.stringify(["id"::name, "request"::true]);
+		do send contents: world.stringify(["id"::name, "request"::["state"::[location.x, location.y], "reward"::0]]);
 
 		//		Wait response
 		loop while: !has_more_message() {
