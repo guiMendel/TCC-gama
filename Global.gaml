@@ -21,9 +21,9 @@ global {
 	/* Given a point, indicates what kind of entity occupies the corresponding cell. It follows this rule: 0 = empty, 1 = resource, 2 = scavenger, 3 = wall */
 	matrix<int> map_content <- map_size matrix_with 0;
 	/* Defines how many cells ahead a scavenger can see */
-	int scavenger_frontal_view_range <- 8;
+	int scavenger_frontal_view_range <- 7;
 	/* Defines how many cells a scavenger can see either to the left or right */
-	int scavenger_lateral_view_range <- 5;
+	int scavenger_lateral_view_range <- 4;
 	/* Defines how many cells behind a scavenger can see */
 	int scavenger_back_view_range <- 1;
 
@@ -79,11 +79,7 @@ global {
 	}
 
 	matrix crop_matrix (matrix ma, point start, point end, int filler) {
-		write "Start and end";
-		write start;
-		write end;
-
-		/* Get a list of columns and rows, and fill void space with the filler */
+	/* Get a list of columns and rows, and fill void space with the filler */
 		list columns <- columns_list(ma);
 
 		/* Crop columns */
@@ -95,7 +91,6 @@ global {
 			add all: list_with(-int(start.x), filler_column) to: columns_cropped at: 0;
 		}
 
-		write "Columns " + length(columns);
 		if (int(end.x) - 1 >= length(columns)) {
 			list filler_column <- list_with(length(rows_list(ma)), filler);
 			add all: list_with(int(end.x) - length(columns), filler_column) to: columns_cropped;
@@ -104,8 +99,6 @@ global {
 		/* Crop rows */
 		list rows <- rows_list(matrix(columns_cropped));
 		list rows_cropped <- rows[int(start.y)::int(end.y)];
-		write "All rows";
-		write rows;
 
 		/* Fill rows */
 		if (int(start.y) < 0) {
@@ -113,14 +106,10 @@ global {
 			add all: list_with(-int(start.y), filler_row) to: rows_cropped at: 0;
 		}
 
-		write "Rows " + length(rows);
 		if (int(end.y) - 1 >= length(rows)) {
 			list filler_row <- list_with(round(end.x - start.x), filler);
 			add all: list_with(int(end.y) - length(rows), filler_row) to: rows_cropped;
 		}
-
-		write "Cropped rows";
-		write rows_cropped;
 
 		/* Done */
 		return transpose(matrix(rows_cropped));

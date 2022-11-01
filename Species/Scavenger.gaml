@@ -193,7 +193,6 @@ species scavenger skills: [network] {
 
 		// Get message (there should only be one)
 		message msg <- fetch_message();
-		//		write name + " received message " + msg.contents + " from " + msg.sender;
 		return msg.contents;
 	}
 
@@ -231,8 +230,6 @@ species scavenger skills: [network] {
 
 		}
 
-		write "facing " + facing_direction;
-
 		/* Find out the new coordinates of this scavenger in the transformed map */
 		int grid_x <- cell.grid_x;
 		int grid_y <- cell.grid_y;
@@ -247,19 +244,11 @@ species scavenger skills: [network] {
 			grid_y <- cell.grid_x;
 		}
 
-		write "Original coordinates: " + cell.grid_x + ", " + cell.grid_y;
-		write "Transformed coordinates: " + grid_x + ", " + grid_y;
-		write "At coordinate: " + map_copy[grid_x, grid_y];
-
 		/* Place a 4 indicating this scavenger's position */
 		map_copy[grid_x, grid_y] <- 4;
-		write "Matrix";
-		write map_copy;
-		write "Vision matrix";
 
 		/* Now scavenger is facing north, so we just need to crop the matrix that corresponds to it's view range */
 		point view_bound_upper <- {grid_x - scavenger_lateral_view_range, grid_y - scavenger_frontal_view_range};
 		point view_bound_lower <- {grid_x + scavenger_lateral_view_range + 1, grid_y + scavenger_back_view_range + 1};
-		write world.crop_matrix(map_copy, view_bound_upper, view_bound_lower, 2);
 		return matrix<int>(world.crop_matrix(map_copy, view_bound_upper, view_bound_lower, 2));
 	} }
