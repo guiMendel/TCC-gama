@@ -13,10 +13,13 @@ species resource {
 
 	init {
 		location <- cell.location;
+		
+		/* Announce presence */
+		map_content[cell.grid_x, cell.grid_y] <- 1;
 	}
 
 	aspect base {
-		draw circle(0.7) color: #green;
+		draw circle((100 / map_size.x) * 0.4) color: #green;
 	}
 
 	//	Spread (true on success, false on failure

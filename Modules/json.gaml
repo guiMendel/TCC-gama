@@ -15,11 +15,17 @@ species json {
 			return stringify_string(target as string);
 		} else if (target is list) {
 			return stringify_list(target as list);
+		} else if (target is matrix) {
+			return stringify_list(rows_list(target as matrix));
 		} else {
 			return string(target);
 		} }
 
 	string stringify_map (map target) {
+		if (length(target.keys) = 0) {
+			return "{}";
+		}
+
 		string result <- "{ ";
 		loop index from: 0 to: length(target.keys) - 1 {
 			string key <- target.keys[index];
@@ -35,6 +41,10 @@ species json {
 	}
 
 	string stringify_list (list target) {
+		if (length(target) = 0) {
+			return "[]";
+		}
+
 		string result <- "[ ";
 		loop index from: 0 to: length(target) - 1 {
 			result <- result + stringify(target[index]);
@@ -45,6 +55,7 @@ species json {
 			}
 
 		}
+
 		return result + " ]";
 	}
 

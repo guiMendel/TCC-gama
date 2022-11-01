@@ -5,7 +5,7 @@
 * Tags: 
 */
 model Grid
+import "Global.gaml"
 
-grid grid_cell width: 50 height: 50 neighbors: 4 {
-	rgb color <- hsb(rnd(1.0), 0.15, 0.85);
+grid grid_cell width: map_size.x height: map_size.y neighbors: 4 {
 }
