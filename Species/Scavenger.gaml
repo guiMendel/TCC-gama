@@ -110,6 +110,10 @@ species scavenger skills: [network] {
 			match "face_left" {
 				facing_direction <- (facing_direction + 3) mod 4;
 			}
+			
+			default {
+				write "Unrecognized action " + action_name;
+			}
 
 		}
 
@@ -121,7 +125,7 @@ species scavenger skills: [network] {
 		point movement;
 		if (move_direction mod 2 = 0) {
 		/* Up or down */
-			movement <- {0.0, 1.0 - move_direction};
+			movement <- {0.0, -1.0 + move_direction};
 		} else {
 		/* Right or left */
 			movement <- {2.0 - move_direction, 0.0};
@@ -129,12 +133,12 @@ species scavenger skills: [network] {
 
 		/* Now we rotate this movement according to face direction */
 		if (facing_direction = 3) {
-		/* Only counterclockwise case */
-			movement <- world.rotate_point(movement, -90.0);
+		/* Only clockwise case */
+			movement <- world.rotate_point(movement, 90.0);
 		} else {
 			int direction_copy <- facing_direction;
 			loop while: direction_copy != 0 {
-				movement <- world.rotate_point(movement, 90.0);
+				movement <- world.rotate_point(movement, -90.0);
 				direction_copy <- direction_copy - 1;
 			}
 
@@ -142,7 +146,7 @@ species scavenger skills: [network] {
 
 		/* Get target cell */
 		grid_cell target <- grid_cell[cell.grid_x + round(movement.x), cell.grid_y + round(movement.y)];
-
+		
 		/* Check if it's available */
 		if (not world.cell_available(target)) {
 		/* Abort */

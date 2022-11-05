@@ -133,6 +133,10 @@ global {
 
 	/* Checks if a scavenger can move to a given cell */
 	bool cell_available (grid_cell cell) {
+		if (cell = nil) {
+			return false;
+		}
+		
 		int content <- map_content[cell.grid_x, cell.grid_y];
 
 		/* 0 = empty, 1 = resource, the rest is scavengers and walls */
