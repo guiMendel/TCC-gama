@@ -25,6 +25,7 @@ experiment TCC type: gui {
 			grid grid_cell border: rgb(200, 200, 200);
 			species scavenger aspect: base;
 			species resource aspect: base;
+			species laser aspect: base;
 		}
 
 		display population_information refresh: every(5 #cycles) {

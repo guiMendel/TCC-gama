@@ -12,20 +12,29 @@ import "Species/Resource.gaml"
 import "Species/Scavenger.gaml"
 
 global {
-	int scavenger_count <- 1;
-	int resource_count <- 12;
-	point map_size <- {6, 6};
+	int scavenger_count <- 8;
+	int resource_count <- 40;
+	point map_size <- {20, 20};
 	float resource_multiply_chance <- 0.05;
 	int id_provider <- 0;
 	json json_encoder;
+	
 	/* Given a point, indicates what kind of entity occupies the corresponding cell. It follows this rule: 0 = empty, 1 = resource, 2 = scavenger, 3 = wall */
 	matrix<int> map_content <- map_size matrix_with 0;
+	
 	/* Defines how many cells ahead a scavenger can see */
-	int scavenger_frontal_view_range <- 7;
+	int scavenger_frontal_view_range <- 20;
 	/* Defines how many cells a scavenger can see either to the left or right */
-	int scavenger_lateral_view_range <- 4;
+	int scavenger_lateral_view_range <- 5;
 	/* Defines how many cells behind a scavenger can see */
-	int scavenger_back_view_range <- 1;
+	int scavenger_back_view_range <- 0;
+	
+	/* Defines the width of the laser tag */
+	int scavenger_tag_width <- 5;
+	/* Defines the range of a laser tag (starting from the shooter's position) */
+	int scavenger_tag_range <- 21;
+	/* Defines for how long scavengers are timed out when tagged */
+	int time_out_duration <- 25;
 
 	init {
 		create json;

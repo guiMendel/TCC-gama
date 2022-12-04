@@ -7,11 +7,15 @@
 model Scavenger
 
 import "../Global.gaml"
+import "Laser.gaml"
 species scavenger skills: [network] {
 	rgb color <- #black;
 	grid_cell cell <- one_of(grid_cell);
 	string name <- "Scav. " + string(world.get_id());
 	string server;
+
+	/* If the scavenger is in time out, and how long it will still take */
+	int time_out <- 0;
 
 	/* Determines which side the scavenger is facing. Must be in the range [0, 1, 2, 3] where 0 is facing north, 1 east and so on */
 	int facing_direction <- rnd(0, 3);
@@ -21,9 +25,6 @@ species scavenger skills: [network] {
 
 	//	Count of collected resources
 	int resources_collected <- 0;
-
-	//	List of actions it can perform each turn
-	list<string> actions <- ["idle", "move_ahead", "face_right", "face_left"];
 
 	init {
 	/* Set current cell as occupied */
@@ -37,6 +38,11 @@ species scavenger skills: [network] {
 	}
 
 	aspect base {
+	/* When tagged, dont' draw */
+		if (time_out > 0) {
+			return;
+		}
+
 		draw square(100 / map_size.x) color: color;
 
 		/* Finds out where to draw facing indicator */
@@ -56,10 +62,33 @@ species scavenger skills: [network] {
 
 	}
 
-	//	Cycle action
 	reflex cycle_action {
-	//		Request action
+	/* If in time out, discount it */
+		if (time_out > 0) {
+		/* Discount it */
+			time_out <- time_out - 1;
+
+			/* Check if done */
+			if (time_out = 0) {
+			/* Come back to the map */
+				cell <- one_of(grid_cell);
+				do occupy(cell);
+			}
+
+			return;
+		}
+
+		/* Request an action to the brain */
 		do execute_action(request_action());
+	}
+
+	action get_tagged {
+	/* Reset time out */
+		time_out <- time_out_duration;
+
+		/* Reset location */
+		cell <- nil;
+		location <- {-1, -1};
 	}
 
 	/* Leaves current cell and occupies this cell */
@@ -80,10 +109,6 @@ species scavenger skills: [network] {
 
 	action execute_action (string action_name) {
 		switch action_name {
-			match "random" {
-				do execute_action(one_of(actions));
-			}
-
 			match "idle" {
 			}
 
@@ -110,13 +135,65 @@ species scavenger skills: [network] {
 			match "face_left" {
 				facing_direction <- (facing_direction + 3) mod 4;
 			}
-			
+
+			match "tag" {
+				do tag();
+			}
+
 			default {
 				write "Unrecognized action " + action_name;
 			}
 
 		}
 
+	}
+
+	/* Shoots a laser in the faced direction */
+	action tag {
+	/* Will hold the laser box's top left coordinates */
+		point laser_top_left;
+		int laser_width;
+		int laser_height;
+		switch facing_direction {
+			match 0 {
+				float x <- cell.grid_x - float(floor(scavenger_tag_width / 2.0));
+				laser_top_left <- {x, cell.grid_y - scavenger_tag_range + 1};
+				laser_width <- scavenger_tag_width;
+				laser_height <- scavenger_tag_range;
+			}
+
+			match 1 {
+				float y <- cell.grid_y - float(floor(scavenger_tag_width / 2.0));
+				laser_top_left <- {cell.grid_x + scavenger_tag_range - 1, y};
+				laser_width <- scavenger_tag_range;
+				laser_height <- scavenger_tag_width;
+			}
+
+			match 2 {
+				float x <- cell.grid_x - float(floor(scavenger_tag_width / 2.0));
+				laser_top_left <- {x, cell.grid_y + scavenger_tag_range - 1};
+				laser_width <- scavenger_tag_width;
+				laser_height <- scavenger_tag_range;
+			}
+
+			match 3 {
+				float y <- cell.grid_y - float(floor(scavenger_tag_width / 2.0));
+				laser_top_left <- {cell.grid_x - scavenger_tag_range + 1, y};
+				laser_width <- scavenger_tag_range;
+				laser_height <- scavenger_tag_width;
+			}
+
+		}
+
+		/* Create a tag at this position */
+		create laser {
+			set top_left <- laser_top_left;
+			set parent <- myself;
+			set width <- laser_width;
+			set height <- laser_height;
+		}
+
+		//		write "Scav at " + cell.grid_x + ", " + cell.grid_y + " produced tag at " + laser_top_left + " with w and h: " + laser_width + ", " + laser_height;
 	}
 
 	/* Moves in a specified direction relative to the facing direction */
@@ -146,7 +223,7 @@ species scavenger skills: [network] {
 
 		/* Get target cell */
 		grid_cell target <- grid_cell[cell.grid_x + round(movement.x), cell.grid_y + round(movement.y)];
-		
+
 		/* Check if it's available */
 		if (not world.cell_available(target)) {
 		/* Abort */
@@ -189,6 +266,8 @@ species scavenger skills: [network] {
 	string request_action {
 		do send contents: world.stringify(["id"::name, "request"::["state"::get_view_matrix(), "reward"::(resource_collected ? 5 : 0)]]);
 		resource_collected <- false;
+
+		//		write get_view_matrix();
 
 		//		Wait response
 		loop while: !has_more_message() {
