@@ -55,12 +55,9 @@ species laser {
 		ask scavenger {
 		/* Ignore parent */
 		/* Check if it's inside the perimeter */
-			write "Scav " + self;
-			write "Laser " + myself;
-			write "Scav cell " + self.cell;
 			if (self != myself.parent and self.cell != nil and self.cell.grid_x >= int(myself.top_left.x) and self.cell.grid_x < int(myself.top_left.x) + myself.width and
 			self.cell.grid_y >= int(myself.top_left.y) and self.cell.grid_y < int(myself.top_left.y) + myself.height) {
-				write "Tagged scavenger at " + self.cell.grid_x + ", " + self.cell.grid_y;
+//				write "Tagged scavenger at " + self.cell.grid_x + ", " + self.cell.grid_y;
 				do get_tagged();
 			}
 

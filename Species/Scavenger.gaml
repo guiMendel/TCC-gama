@@ -286,9 +286,9 @@ species scavenger skills: [network] {
 			resource_collected <- true;
 			resources_collected <- resources_collected + length(cell_resources);
 
-			//		Erase any encountered resources
+			/* Warn reosurce of collection */
 			ask cell_resources {
-				do die;
+				do get_collected;
 			}
 
 		}
