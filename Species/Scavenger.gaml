@@ -9,7 +9,8 @@ model Scavenger
 import "../Global.gaml"
 import "Laser.gaml"
 species scavenger skills: [network] {
-	rgb color <- #black;
+	rgb color <- rgb(252, 0, 0);
+	rgb vision_color <- rgb(100, 100, 100, 0.4);
 	grid_cell cell <- one_of(grid_cell);
 	string name <- "Scav. " + string(world.get_id());
 	string server;
@@ -18,7 +19,7 @@ species scavenger skills: [network] {
 	int time_out <- 0;
 
 	/* Determines which side the scavenger is facing. Must be in the range [0, 1, 2, 3] where 0 is facing north, 1 east and so on */
-	int facing_direction <- rnd(0, 3);
+	int facing_direction <- 0;
 
 	/* Remembers if a resource was collected last cycle */
 	bool resource_collected <- false;
@@ -27,10 +28,7 @@ species scavenger skills: [network] {
 	int resources_collected <- 0;
 
 	init {
-	/* Set current cell as occupied */
-		do occupy(cell);
-
-		/* Connect to server */
+	/* Connect to server */
 		do connect to: "localhost" protocol: "websocket_client" port: 3001 raw: true;
 
 		/* Identify to server */
@@ -43,7 +41,7 @@ species scavenger skills: [network] {
 			return;
 		}
 
-		draw square(100 / map_size.x) color: color;
+		draw square(cell_size) color: color;
 
 		/* Finds out where to draw facing indicator */
 		grid_cell facing_location;
@@ -57,7 +55,7 @@ species scavenger skills: [network] {
 
 		/* Doesn't draw it if it's outside of the grid */
 		if (facing_location != nil) {
-			draw square(100 / map_size.x) color: rgb(0, 0, 255, 40) at: facing_location.location;
+			draw square(cell_size) color: vision_color at: facing_location.location;
 		}
 
 	}
@@ -94,14 +92,16 @@ species scavenger skills: [network] {
 	/* Leaves current cell and occupies this cell */
 	action occupy (grid_cell target) {
 	/* Vacate old cell */
-		map_content[cell.grid_x, cell.grid_y] <- 0;
+		if (cell != nil) {
+			map_content[cell.grid_x, cell.grid_y] <- 0;
+		}
 
 		/* Update cell */
 		cell <- target;
 		location <- cell.location;
 
 		/* Occupy new cell */
-		map_content[cell.grid_x, cell.grid_y] <- 3;
+		map_content[cell.grid_x, cell.grid_y] <- 2;
 
 		/* Detect resource collision */
 		do collect_resource;

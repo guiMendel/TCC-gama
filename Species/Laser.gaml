@@ -8,7 +8,7 @@ model Laser
 
 import "../Global.gaml"
 species laser {
-	rgb color <- rgb(255, 0, 0, 0.5);
+	rgb color <- rgb(255, 224, 0, 0.5);
 
 	/* Coordinates where the top left square is */
 	point top_left;
@@ -57,7 +57,7 @@ species laser {
 		/* Check if it's inside the perimeter */
 			if (self != myself.parent and self.cell != nil and self.cell.grid_x >= int(myself.top_left.x) and self.cell.grid_x < int(myself.top_left.x) + myself.width and
 			self.cell.grid_y >= int(myself.top_left.y) and self.cell.grid_y < int(myself.top_left.y) + myself.height) {
-//				write "Tagged scavenger at " + self.cell.grid_x + ", " + self.cell.grid_y;
+			//				write "Tagged scavenger at " + self.cell.grid_x + ", " + self.cell.grid_y;
 				do get_tagged();
 			}
 

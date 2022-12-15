@@ -6,17 +6,29 @@
 */
 model Global
 
+import "Species/Wall.gaml"
 import "Grid.gaml"
 import "Modules/json.gaml"
 import "Species/Resource.gaml"
 import "Species/Scavenger.gaml"
 
 global {
-	int scavenger_count <- 2;
-	int resource_count <- 10;
-	point map_size <- {5, 5};
+	point map_size <- read_map_size();
 	int id_provider <- 0;
 	json json_encoder;
+	int padding_x <- 0;
+	int padding_y <- 0;
+	
+	float cell_size <- 100 / map_size.x * 1.04;
+	
+	/* Whether to show grid */
+	bool show_grid <- true;
+
+	/* Path of the selected scenario */
+	string scenario <- "Scenarios/A_small_map.csv";
+
+	/* Color of the grid */
+	rgb grid_color <- rgb(126, 126, 126);
 
 	/* Given a point, indicates what kind of entity occupies the corresponding cell. It follows this rule: 0 = empty, 1 = resource, 2 = scavenger, 3 = wall */
 	matrix<int> map_content <- map_size matrix_with 0;
@@ -41,8 +53,58 @@ global {
 	init {
 		create json;
 		json_encoder <- first(json);
-		create resource number: resource_count;
-		create scavenger number: scavenger_count;
+
+		/* Read map */
+		csv_file scenario_file <- csv_file(scenario, false);
+		/* Current cell row */
+		int cell_row <- floor(padding_y / 2);
+		/* Current cell column */
+		int cell_column <- floor(padding_x / 2);
+		loop content over: scenario_file {
+			switch content {
+			/* Empty: do nothing */
+				match 0 {
+				}
+
+				/* Resource */
+				match 1 {
+					create resource {
+						cell <- grid_cell[cell_column, cell_row];
+						do respawn;
+					}
+
+				}
+
+				/* Scavenger */
+				match 2 {
+					create scavenger {
+						cell <- nil;
+						do occupy(grid_cell[cell_column, cell_row]);
+					}
+
+				}
+
+				/* Wall */
+				match 3 {
+					create wall {
+						cell <- grid_cell[cell_column, cell_row];
+						do spawn;
+					}
+
+				}
+
+			}
+
+			/* Increment cell position */
+			if (cell_column = int(map_size.x) - 1 - ceil(padding_x / 2)) {
+				cell_column <- floor(padding_x / 2);
+				cell_row <- cell_row + 1;
+			} else {
+				cell_column <- cell_column + 1;
+			}
+
+		}
+
 	}
 
 	//	Stop condition
@@ -66,6 +128,19 @@ global {
 		}
 
 		return available_resources;
+	}
+
+	point read_map_size {
+		point raw_size <- csv_file(scenario, false).contents.dimension;
+		if (raw_size.x > raw_size.y) {
+			padding_y <- int(raw_size.x - raw_size.y);
+			raw_size <- {raw_size.x, raw_size.x};
+		} else if (raw_size.y > raw_size.x) {
+			padding_x <- int(raw_size.y - raw_size.x);
+			raw_size <- {raw_size.y, raw_size.y};
+		}
+
+		return raw_size;
 	}
 
 	/* ==================== HELPER FUNCTIONS ==================== */

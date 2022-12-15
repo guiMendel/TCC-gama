@@ -10,31 +10,27 @@ import "../Global.gaml"
 import "../Grid.gaml"
 species resource {
 	grid_cell cell <- one_of(grid_cell);
+	rgb color <- rgb(60,254,0);
 
 	/* Whether it's been collected as is now waiting to respawn */
 	bool collected <- false;
-
-	init {
-		do respawn;
-	}
 
 	aspect base {
 		if (collected) {
 			return;
 		}
 
-		draw circle((100 / map_size.x) * 0.4) color: #green;
+		//		draw circle((100 / map_size.x) * 0.4) color: #green;
+		draw square(cell_size) color: color;
 	}
 
 	reflex respawn_chance when: collected and flip(get_respawn_chance()) {
-		write "respawned!";
-		
 		do respawn;
 	}
 
 	action respawn {
 	/* If this cell is taken, respawn somewhere else */
-		loop while: (map_content[cell.grid_x, cell.grid_y] = 1) {
+		loop while: (map_content[cell.grid_x, cell.grid_y] != 0) {
 			cell <- one_of(grid_cell);
 		}
 
@@ -68,9 +64,8 @@ species resource {
 		if (influencing_resources = 0) {
 			return 0.0;
 		}
-		
-//		write "Got " + influencing_resources + " influences";
 
+		//		write "Got " + influencing_resources + " influences";
 		if (influencing_resources <= 2) {
 			return 0.01;
 		}
