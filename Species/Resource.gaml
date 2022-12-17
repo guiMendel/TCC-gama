@@ -10,7 +10,10 @@ import "../Global.gaml"
 import "../Grid.gaml"
 species resource {
 	grid_cell cell <- one_of(grid_cell);
-	rgb color <- rgb(60,254,0);
+	rgb color <- rgb(60, 254, 0);
+
+	/* Whether should respawn as soon as it's cell is freed */
+	bool respawn_ready <- false;
 
 	/* Whether it's been collected as is now waiting to respawn */
 	bool collected <- false;
@@ -24,15 +27,18 @@ species resource {
 		draw square(cell_size) color: color;
 	}
 
-	reflex respawn_chance when: collected and flip(get_respawn_chance()) {
+	reflex respawn_chance when: collected and (respawn_ready or flip(get_respawn_chance())) {
 		do respawn;
 	}
 
 	action respawn {
-	/* If this cell is taken, respawn somewhere else */
-		loop while: (map_content[cell.grid_x, cell.grid_y] != 0) {
-			cell <- one_of(grid_cell);
+	/* If this cell is taken, respawn later */
+		if (map_content[cell.grid_x, cell.grid_y] != 0) {
+			respawn_ready <- true;
+			return;
 		}
+
+		respawn_ready <- false;
 
 		/* Announce presence */
 		map_content[cell.grid_x, cell.grid_y] <- 1;

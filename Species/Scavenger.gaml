@@ -14,6 +14,7 @@ species scavenger skills: [network] {
 	grid_cell cell <- one_of(grid_cell);
 	string name <- "Scav. " + string(world.get_id());
 	string server;
+	grid_cell initial_cell <- cell;
 
 	/* If the scavenger is in time out, and how long it will still take */
 	int time_out <- 0;
@@ -69,8 +70,7 @@ species scavenger skills: [network] {
 			/* Check if done */
 			if (time_out = 0) {
 			/* Come back to the map */
-				cell <- one_of(grid_cell);
-				do occupy(cell);
+				do occupy(initial_cell);
 			}
 
 			return;
@@ -268,15 +268,23 @@ species scavenger skills: [network] {
 		resource_collected <- false;
 
 		//		write get_view_matrix();
-
-		//		Wait response
-		loop while: !has_more_message() {
-			do fetch_message_from_network;
+		loop while: true {
+		/* Wait response */
+			loop while: !has_more_message() {
+				do fetch_message_from_network;
+			}
+			
+			/* Get the message target */
+			list<string> message_body <- fetch_message().contents split_with ';';
+			
+//			write message_body;
+			
+			/* Check if the message is for this agent */
+			if (message_body[0] = name) {
+//				write name + " got " + message_body[1];
+				return message_body[1];
+			}
 		}
-
-		// Get message (there should only be one)
-		message msg <- fetch_message();
-		return msg.contents;
 	}
 
 	action collect_resource {

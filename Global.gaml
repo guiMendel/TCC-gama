@@ -25,7 +25,7 @@ global {
 	bool show_grid <- true;
 
 	/* Path of the selected scenario */
-	string scenario <- "Scenarios/A_small_map.csv";
+	string scenario <- "Scenarios/A_small.csv";
 
 	/* Color of the grid */
 	rgb grid_color <- rgb(126, 126, 126);
@@ -80,6 +80,7 @@ global {
 					create scavenger {
 						cell <- nil;
 						do occupy(grid_cell[cell_column, cell_row]);
+						initial_cell <- cell;
 					}
 
 				}
