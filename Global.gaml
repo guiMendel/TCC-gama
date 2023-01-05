@@ -6,21 +6,25 @@
 */
 model Global
 
+/* Total de ciclos no episodio */
+/* Total de agentes */
 import "Species/Wall.gaml"
 import "Grid.gaml"
 import "Modules/json.gaml"
 import "Species/Resource.gaml"
 import "Species/Scavenger.gaml"
 
-global {
+global skills: [network] {
 	point map_size <- read_map_size();
 	int id_provider <- 0;
 	json json_encoder;
 	int padding_x <- 0;
 	int padding_y <- 0;
-	
 	float cell_size <- 100 / map_size.x * 1.04;
-	
+
+	/* How many cycles an episode has */
+	int episode_duration <- 1000;
+
 	/* Whether to show grid */
 	bool show_grid <- true;
 
@@ -50,9 +54,22 @@ global {
 	/* Defines the range of resource respawn influence */
 	int resource_respawn_influence_range <- 2;
 
+	/* Whether results were already saved */
+	bool results_saved <- false;
+
+	/* Name of current scenario */
+	string scenario_name;
+
 	init {
 		create json;
 		json_encoder <- first(json);
+
+		/* Get scenario name */
+		scenario_name <- replace(replace(scenario, "Scenarios/", ""), ".csv", "");
+
+		/* Send scenario to backend */
+		do connect to: "localhost" protocol: "websocket_client" port: 3001 raw: true;
+		do send contents: stringify(["scenario"::scenario_name]);
 
 		/* Read map */
 		csv_file scenario_file <- csv_file(scenario, false);
@@ -110,6 +127,35 @@ global {
 
 	//	Stop condition
 	reflex stop_on_resource_depletion when: get_available_resources_count() = 0 {
+		do finish;
+	}
+
+	/* Stop after episode duration is elapsed */
+	reflex stop_on_episode_end when: cycle >= episode_duration {
+		do finish;
+	}
+
+	/* Stop simulation and write down results in a file */
+	action finish {
+		if (results_saved = false) {
+		/* Collect data on each agent */
+			list<map> agents_data;
+			loop scav over: scavenger {
+				float collection_average <- empty(scav.collection_cycles) ? cycle : sum(scav.collection_cycles) / length(scav.collection_cycles);
+				agents_data <+ ["name"::scav.name, "resourcesCollected"::scav.resources_collected, "timeOutCycles"::scav.time_out_count, "averageCollectionCycle"::collection_average];
+			}
+
+			/* Construct episode's data record */
+			map episode_data <- ["scenario"::scenario_name, "totalCycles"::cycle, "agents"::agents_data];
+
+			/* Store it in a file */
+			string file_name <- "Results/" + scenario_name + "::" + machine_time + ".json";
+			save stringify(episode_data) to: file_name type: "text";
+		}
+
+		results_saved <- true;
+
+		/* Stop */
 		do pause;
 	}
 

@@ -6,6 +6,10 @@
 */
 model Scavenger
 
+/* Total de recompensas coletadas */
+/* Medio de ciclo em que recompensas foram coletadas */
+/* Total de ciclos em time out */
+
 import "../Global.gaml"
 import "Laser.gaml"
 species scavenger skills: [network] {
@@ -25,8 +29,14 @@ species scavenger skills: [network] {
 	/* Remembers if a resource was collected last cycle */
 	bool resource_collected <- false;
 
-	//	Count of collected resources
+	/* Count of collected resources */
 	int resources_collected <- 0;
+	
+	/* Cycles in which a resource was collected */
+	list<int> collection_cycles;
+	
+	/* Count of cycles spent in time-out */
+	int time_out_count <- 0;
 
 	init {
 	/* Connect to server */
@@ -66,6 +76,9 @@ species scavenger skills: [network] {
 		if (time_out > 0) {
 		/* Discount it */
 			time_out <- time_out - 1;
+			
+			/* Count a time-out cycle */
+			time_out_count <- time_out_count + 1;
 
 			/* Check if done */
 			if (time_out = 0) {
@@ -292,7 +305,12 @@ species scavenger skills: [network] {
 		if (!empty(cell_resources)) {
 		/* Register collection */
 			resource_collected <- true;
-			resources_collected <- resources_collected + length(cell_resources);
+			
+			/* Count it */
+			resources_collected <- resources_collected + 1;
+			
+			/* Remember this cycle */
+			collection_cycles <+ cycle;
 
 			/* Warn reosurce of collection */
 			ask cell_resources {
