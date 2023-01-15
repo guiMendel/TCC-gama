@@ -59,6 +59,9 @@ global skills: [network] {
 
 	/* Name of current scenario */
 	string scenario_name;
+	
+	/* Whether simulation is over */
+	bool simulation_over <- false;
 
 	init {
 		create json;
@@ -154,9 +157,8 @@ global skills: [network] {
 		}
 
 		results_saved <- true;
-
-		/* Stop */
-		do pause;
+		
+		simulation_over <- true;
 	}
 
 	int get_id {

@@ -40,6 +40,11 @@ experiment A type: gui {
 
 }
 
+experiment batchA type: batch until: simulation_over = true repeat: 2 {
+	parameter "Scenario" var: scenario among: ["Scenarios/A_small.csv"];
+	parameter "Episode Duration" var: episode_duration among: [1000];
+}
+
 experiment B type: gui {
 	parameter "Scenario" var: scenario <- "Scenarios/B_open.csv";
 	parameter "Show Grid" var: show_grid <- false;
@@ -71,6 +76,13 @@ experiment B type: gui {
 	}
 
 }
+
+
+experiment batchB type: batch until: simulation_over = true repeat: 2 {
+	parameter "Scenario" var: scenario <- "Scenarios/B_open.csv";
+	parameter "Episode Duration" var: episode_duration among: [1000];
+}
+
 
 experiment C type: gui {
 	parameter "Scenario" var: scenario <- "Scenarios/C_basic_single_entrance_region.csv";
