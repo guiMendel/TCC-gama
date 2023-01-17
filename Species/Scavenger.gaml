@@ -9,11 +9,10 @@ model Scavenger
 /* Total de recompensas coletadas */
 /* Medio de ciclo em que recompensas foram coletadas */
 /* Total de ciclos em time out */
-
 import "../Global.gaml"
 import "Laser.gaml"
 species scavenger skills: [network] {
-	rgb color <- rgb(252, 0, 0);
+	rgb color <- scavenger_color;
 	rgb vision_color <- rgb(100, 100, 100, 0.4);
 	grid_cell cell <- one_of(grid_cell);
 	string name <- "Scav. " + string(world.get_id());
@@ -31,10 +30,10 @@ species scavenger skills: [network] {
 
 	/* Count of collected resources */
 	int resources_collected <- 0;
-	
+
 	/* Cycles in which a resource was collected */
 	list<int> collection_cycles;
-	
+
 	/* Count of cycles spent in time-out */
 	int time_out_count <- 0;
 
@@ -76,7 +75,7 @@ species scavenger skills: [network] {
 		if (time_out > 0) {
 		/* Discount it */
 			time_out <- time_out - 1;
-			
+
 			/* Count a time-out cycle */
 			time_out_count <- time_out_count + 1;
 
@@ -286,18 +285,20 @@ species scavenger skills: [network] {
 			loop while: !has_more_message() {
 				do fetch_message_from_network;
 			}
-			
+
 			/* Get the message target */
 			list<string> message_body <- fetch_message().contents split_with ';';
-			
-//			write message_body;
-			
+
+			//			write message_body;
+
 			/* Check if the message is for this agent */
 			if (message_body[0] = name) {
-//				write name + " got " + message_body[1];
+			//				write name + " got " + message_body[1];
 				return message_body[1];
 			}
+
 		}
+
 	}
 
 	action collect_resource {
@@ -305,10 +306,10 @@ species scavenger skills: [network] {
 		if (!empty(cell_resources)) {
 		/* Register collection */
 			resource_collected <- true;
-			
+
 			/* Count it */
 			resources_collected <- resources_collected + 1;
-			
+
 			/* Remember this cycle */
 			collection_cycles <+ cycle;
 
@@ -321,8 +322,30 @@ species scavenger skills: [network] {
 
 	}
 
+	int get_color_channel (rgb target_color, int channel) {
+		switch (channel) {
+			match 0 {
+				return target_color.red;
+			}
+
+			match 1 {
+				return target_color.green;
+			}
+
+			match 2 {
+				return target_color.blue;
+			}
+
+			default {
+				return 0;
+			}
+
+		}
+
+	}
+
 	/* Returns a matrix of 0, 1, 2 and 3 representing what the scavenger can see. The 4 represents his current location. Please refer to the global map_content documentation to better understand this */
-	matrix<int> get_view_matrix {
+	list<matrix<int>> get_view_matrix {
 	/* Rotate the map so that scavenger is always facing north */
 		matrix<int> map_copy <- map_content;
 		int facing_copy <- facing_direction;
@@ -359,5 +382,46 @@ species scavenger skills: [network] {
 		/* Now scavenger is facing north, so we just need to crop the matrix that corresponds to it's view range */
 		point view_bound_upper <- {grid_x - scavenger_lateral_view_range, grid_y - scavenger_frontal_view_range};
 		point view_bound_lower <- {grid_x + scavenger_lateral_view_range + 1, grid_y + scavenger_back_view_range + 1};
-		return matrix<int>(world.crop_matrix(map_copy, view_bound_upper, view_bound_lower, 2));
+		matrix<int> cropped_view <- matrix<int>(world.crop_matrix(map_copy, view_bound_upper, view_bound_lower, 2));
+
+		/* Create the 3 channels */
+		list<matrix<int>> vision_image <- list_with(3, {cropped_view.columns, cropped_view.rows} matrix_with 0);
+
+		/* For each channel */
+		loop channel over: [0, 1, 2] {
+		/* For each cell */
+			loop cell_row from: 0 to: vision_image[channel].rows - 1 {
+				loop cell_column from: 0 to: vision_image[channel].columns - 1 {
+					int cell_content <- cropped_view[cell_column, cell_row];
+					
+					switch (cell_content) {
+						match 0 {
+							vision_image[channel][cell_column, cell_row] <- get_color_channel(empty_color, channel);
+						}
+
+						match 1 {
+							vision_image[channel][cell_column, cell_row] <- get_color_channel(resource_color, channel);
+						}
+
+						match 2 {
+							vision_image[channel][cell_column, cell_row] <- get_color_channel(scavenger_color, channel);
+						}
+
+						match 3 {
+							vision_image[channel][cell_column, cell_row] <- get_color_channel(wall_color, channel);
+						}
+
+						match 4 {
+							vision_image[channel][cell_column, cell_row] <- get_color_channel(scavenger_self_color, channel);
+						}
+
+					}
+
+				}
+
+			}
+
+		}
+
+		return vision_image;
 	} }

@@ -10,7 +10,7 @@ import "../Global.gaml"
 import "../Grid.gaml"
 species resource {
 	grid_cell cell <- one_of(grid_cell);
-	rgb color <- rgb(60, 254, 0);
+	rgb color <- resource_color;
 
 	/* Whether should respawn as soon as it's cell is freed */
 	bool respawn_ready <- false;

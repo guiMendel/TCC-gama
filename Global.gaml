@@ -31,9 +31,15 @@ global skills: [network] {
 	/* Path of the selected scenario */
 	string scenario <- "Scenarios/A_small.csv";
 
-	/* Color of the grid */
-	rgb grid_color <- rgb(126, 126, 126);
 
+	
+	rgb scavenger_color <- #red;
+	rgb wall_color <- #gray;
+	rgb resource_color <- rgb(60, 255, 0);
+	rgb scavenger_self_color <- #blue;
+	rgb empty_color <- #black;
+	rgb grid_color <- wall_color;
+	
 	/* Given a point, indicates what kind of entity occupies the corresponding cell. It follows this rule: 0 = empty, 1 = resource, 2 = scavenger, 3 = wall */
 	matrix<int> map_content <- map_size matrix_with 0;
 
@@ -152,7 +158,7 @@ global skills: [network] {
 			map episode_data <- ["scenario"::scenario_name, "totalCycles"::cycle, "agents"::agents_data];
 
 			/* Store it in a file */
-			string file_name <- "Results/" + scenario_name + "::" + machine_time + ".json";
+			string file_name <- "Results/" + scenario_name + "::" + #now + ".json";
 			save stringify(episode_data) to: file_name type: "text";
 		}
 

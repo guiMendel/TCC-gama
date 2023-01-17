@@ -8,7 +8,7 @@ model Wall
 
 import "../Global.gaml"
 species wall {
-	rgb color <- grid_color;
+	rgb color <- wall_color;
 	grid_cell cell <- one_of(grid_cell);
 
 	aspect base {

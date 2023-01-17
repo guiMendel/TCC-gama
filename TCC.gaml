@@ -78,7 +78,7 @@ experiment B type: gui {
 }
 
 
-experiment batchB type: batch until: simulation_over = true repeat: 2 {
+experiment batchB type: batch until: simulation_over = true repeat: 2000 {
 	parameter "Scenario" var: scenario <- "Scenarios/B_open.csv";
 	parameter "Episode Duration" var: episode_duration among: [1000];
 }
