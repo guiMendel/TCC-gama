@@ -40,7 +40,7 @@ experiment A type: gui {
 
 }
 
-experiment batchA type: batch until: simulation_over = true repeat: 2 {
+experiment batchA type: batch until: simulation_over = true repeat: 2000 {
 	parameter "Scenario" var: scenario among: ["Scenarios/A_small.csv"];
 	parameter "Episode Duration" var: episode_duration among: [1000];
 }

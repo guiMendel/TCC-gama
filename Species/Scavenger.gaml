@@ -382,7 +382,7 @@ species scavenger skills: [network] {
 		/* Now scavenger is facing north, so we just need to crop the matrix that corresponds to it's view range */
 		point view_bound_upper <- {grid_x - scavenger_lateral_view_range, grid_y - scavenger_frontal_view_range};
 		point view_bound_lower <- {grid_x + scavenger_lateral_view_range + 1, grid_y + scavenger_back_view_range + 1};
-		matrix<int> cropped_view <- matrix<int>(world.crop_matrix(map_copy, view_bound_upper, view_bound_lower, 2));
+		matrix<int> cropped_view <- matrix<int>(world.crop_matrix(map_copy, view_bound_upper, view_bound_lower, 3));
 
 		/* Create the 3 channels */
 		list<matrix<int>> vision_image <- list_with(3, {cropped_view.columns, cropped_view.rows} matrix_with 0);
@@ -393,7 +393,6 @@ species scavenger skills: [network] {
 			loop cell_row from: 0 to: vision_image[channel].rows - 1 {
 				loop cell_column from: 0 to: vision_image[channel].columns - 1 {
 					int cell_content <- cropped_view[cell_column, cell_row];
-					
 					switch (cell_content) {
 						match 0 {
 							vision_image[channel][cell_column, cell_row] <- get_color_channel(empty_color, channel);

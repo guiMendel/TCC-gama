@@ -30,23 +30,20 @@ global skills: [network] {
 
 	/* Path of the selected scenario */
 	string scenario <- "Scenarios/A_small.csv";
-
-
-	
 	rgb scavenger_color <- #red;
 	rgb wall_color <- #gray;
 	rgb resource_color <- rgb(60, 255, 0);
 	rgb scavenger_self_color <- #blue;
 	rgb empty_color <- #black;
 	rgb grid_color <- wall_color;
-	
+
 	/* Given a point, indicates what kind of entity occupies the corresponding cell. It follows this rule: 0 = empty, 1 = resource, 2 = scavenger, 3 = wall */
 	matrix<int> map_content <- map_size matrix_with 0;
 
 	/* Defines how many cells ahead a scavenger can see */
 	int scavenger_frontal_view_range <- 20;
 	/* Defines how many cells a scavenger can see either to the left or right */
-	int scavenger_lateral_view_range <- 5;
+	int scavenger_lateral_view_range <- 10;
 	/* Defines how many cells behind a scavenger can see */
 	int scavenger_back_view_range <- 0;
 
@@ -65,7 +62,7 @@ global skills: [network] {
 
 	/* Name of current scenario */
 	string scenario_name;
-	
+
 	/* Whether simulation is over */
 	bool simulation_over <- false;
 
@@ -79,6 +76,29 @@ global skills: [network] {
 		/* Send scenario to backend */
 		do connect to: "localhost" protocol: "websocket_client" port: 3001 raw: true;
 		do send contents: stringify(["scenario"::scenario_name]);
+		loop row over: range(0, map_size.y - 1) {
+			int column <- 0;
+			loop while: column < map_size.x {
+				if (row >= padding_y / 2 and row < map_size.y - 1 - padding_y / 2) {
+					if (column >= padding_x / 2 and column < map_size.x - padding_x / 2) {
+						column <- int(map_size.x - padding_x / 2);
+					}
+
+				}
+				
+				if (column >= map_size.x) {
+					break;
+				}
+
+				create wall {
+					cell <- grid_cell[column, row];
+					do spawn;
+				}
+
+				column <- column + 1;
+			}
+
+		}
 
 		/* Read map */
 		csv_file scenario_file <- csv_file(scenario, false);
@@ -163,7 +183,6 @@ global skills: [network] {
 		}
 
 		results_saved <- true;
-		
 		simulation_over <- true;
 	}
 
